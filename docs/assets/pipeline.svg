@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 980" width="1600" height="980" role="img" aria-labelledby="title desc">
+  <title id="title">Pipeline de vídeo y ciclos separados</title>
+  <desc id="desc">Ciclo del worker único: captura, detección cada DETECT_EVERY_N, tracker IoU, clasificación cada INFER_EVERY_N, anotación, JPEG y publicación. Incluye el cálculo de IoU y el camino idle.</desc>
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0f14"/>
+      <stop offset="1" stop-color="#0d131a"/>
+    </linearGradient>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#39d6ff"/>
+    </marker>
+    <marker id="a2w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffbe55"/>
+    </marker>
+    <marker id="a2g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6b7c"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="980" fill="url(#bg2)"/>
+  <rect x="24" y="24" width="1552" height="932" rx="22" fill="none" stroke="#1c2632"/>
+
+  <text x="60" y="76" fill="#e6edf3" font-family="ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif" font-size="32" font-weight="700">Pipeline · ciclos separados y tracker IoU</text>
+  <text x="60" y="106" fill="#8b98a5" font-family="ui-sans-serif, sans-serif" font-size="15">Detectar es caro; clasificar también. V2 los desacopla y reutiliza la última predicción mientras la caja siga siendo la misma persona.</text>
+
+  <!-- COLUMNA IZQUIERDA -->
+  <text x="60" y="154" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="12" letter-spacing="2">CICLO DEL WORKER (1 HILO)</text>
+
+  <rect x="48" y="170" width="620" height="64" rx="12" fill="#111d29" stroke="#2b4055"/>
+  <text x="70" y="196" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="600">frame ← camera.read()</text>
+  <text x="70" y="219" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="11.5">copia del último frame BGR · nunca bloquea al hilo de captura</text>
+
+  <line x1="358" y1="234" x2="358" y2="252" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="256" width="620" height="64" rx="12" fill="#141a12" stroke="#3d5a2a"/>
+  <text x="70" y="282" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="600">¿stream_clients &gt; 0?</text>
+  <text x="70" y="305" fill="#9fb3c8" font-family="ui-sans-serif, sans-serif" font-size="13">No → idle: lee cámara, resetea tracker, no infiere ni codifica</text>
+
+  <line x1="358" y1="320" x2="358" y2="338" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="342" width="620" height="64" rx="12" fill="#1a1410" stroke="#5a4020"/>
+  <text x="70" y="368" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="600">¿frame es None?</text>
+  <text x="70" y="391" fill="#d6c1a4" font-family="ui-sans-serif, sans-serif" font-size="13">Sí → placeholder cada 1 s · fps = 0 · wait(0.25)</text>
+
+  <line x1="358" y1="406" x2="358" y2="424" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="428" width="620" height="66" rx="12" fill="#0e1f2b" stroke="#1f5a78"/>
+  <text x="70" y="454" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="600">¿frame_index % DETECT_EVERY_N == 0?</text>
+  <text x="70" y="477" fill="#9fb3c8" font-family="ui-sans-serif, sans-serif" font-size="13">También si faces está vacío → recuperación rápida al entrar alguien</text>
+
+  <line x1="358" y1="494" x2="358" y2="512" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="516" width="620" height="76" rx="12" fill="#0e1f2b" stroke="#1f5a78"/>
+  <text x="70" y="542" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="17" font-weight="600">YuNet · 320 px · score 0.6 · NMS 0.3</text>
+  <text x="70" y="565" fill="#9fb3c8" font-family="ui-sans-serif, sans-serif" font-size="13">Escala cajas a resolución original · descarta &lt; 8 px · clamp al frame</text>
+  <text x="70" y="584" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="11">si YuNet no carga → Haar frontalface (fallback)</text>
+
+  <line x1="358" y1="592" x2="358" y2="610" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="614" width="620" height="76" rx="12" fill="#141226" stroke="#423a72"/>
+  <text x="70" y="640" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="17" font-weight="600">tracker.update(detecciones)</text>
+  <text x="70" y="663" fill="#b9b3d6" font-family="ui-sans-serif, sans-serif" font-size="13">IoU &gt; 0.3 · reutiliza prediction · misses++ · descarta tras 2</text>
+  <text x="70" y="682" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="11">una caja nueva no hereda la predicción de otra persona</text>
+
+  <line x1="358" y1="690" x2="358" y2="708" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="712" width="620" height="76" rx="12" fill="#1b1420" stroke="#6a2f52"/>
+  <text x="70" y="738" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="17" font-weight="600">¿toca clasificar? % INFER_EVERY_N == 0</text>
+  <text x="70" y="761" fill="#d7c7d5" font-family="ui-sans-serif, sans-serif" font-size="13">o alguna cara sin prediction → ONNX 224 · fallback Caffe 227</text>
+  <text x="70" y="780" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="11">solo se infiere sobre caras que aún no tienen etiqueta</text>
+
+  <line x1="358" y1="788" x2="358" y2="806" stroke="#39d6ff" stroke-width="2.5" marker-end="url(#a2)"/>
+
+  <rect x="48" y="810" width="620" height="66" rx="12" fill="#111d29" stroke="#2b4055"/>
+  <text x="70" y="836" fill="#e6edf3" font-family="ui-sans-serif, sans-serif" font-size="16" font-weight="600">annotate → imencode(JPG 80) → publish</text>
+  <text x="70" y="859" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="11.5">bajo lock · fps EMA 0.85/0.15 · pacing stop.wait(period − elapsed)</text>
+
+  <text x="48" y="906" fill="#5b6b7c" font-family="ui-sans-serif, sans-serif" font-size="12">Cualquier excepción se captura por iteración: se registra, se publica el error y el worker sigue vivo.</text>
+
+  <!-- COLUMNA DERECHA -->
+  <text x="716" y="154" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="12" letter-spacing="2">CADENCIA EN 12 FRAMES (DETECT=2, INFER=5)</text>
+  <rect x="704" y="170" width="844" height="252" rx="18" fill="#0f1620" stroke="#223041"/>
+
+  <!-- timeline -->
+  <g font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#5b6b7c">
+    <text x="730" y="202">frame</text>
+    <text x="730" y="226">detección</text>
+    <text x="730" y="250">clasificación</text>
+    <text x="730" y="274">JPEG</text>
+  </g>
+  <!-- 12 columnas -->
+  <g>
+    <!-- generado a mano: x = 840 + i*58 -->
+    <g font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#8b98a5" text-anchor="middle">
+      <text x="852" y="202">0</text><text x="910" y="202">1</text><text x="968" y="202">2</text><text x="1026" y="202">3</text>
+      <text x="1084" y="202">4</text><text x="1142" y="202">5</text><text x="1200" y="202">6</text><text x="1258" y="202">7</text>
+      <text x="1316" y="202">8</text><text x="1374" y="202">9</text><text x="1432" y="202">10</text><text x="1490" y="202">11</text>
+    </g>
+    <!-- deteccion: pares -->
+    <g fill="#39d6ff">
+      <circle cx="852" cy="222" r="6"/><circle cx="968" cy="222" r="6"/><circle cx="1084" cy="222" r="6"/>
+      <circle cx="1200" cy="222" r="6"/><circle cx="1316" cy="222" r="6"/><circle cx="1432" cy="222" r="6"/>
+    </g>
+    <!-- clasificacion: 0,5,10 -->
+    <g fill="#ff6fa5">
+      <rect x="845" y="240" width="14" height="14" rx="3"/><rect x="1135" y="240" width="14" height="14" rx="3"/><rect x="1425" y="240" width="14" height="14" rx="3"/>
+    </g>
+    <!-- jpeg todos -->
+    <g fill="#00ffb4">
+      <rect x="848" y="268" width="8" height="8" rx="2"/><rect x="906" y="268" width="8" height="8" rx="2"/><rect x="964" y="268" width="8" height="8" rx="2"/><rect x="1022" y="268" width="8" height="8" rx="2"/>
+      <rect x="1080" y="268" width="8" height="8" rx="2"/><rect x="1138" y="268" width="8" height="8" rx="2"/><rect x="1196" y="268" width="8" height="8" rx="2"/><rect x="1254" y="268" width="8" height="8" rx="2"/>
+      <rect x="1312" y="268" width="8" height="8" rx="2"/><rect x="1370" y="268" width="8" height="8" rx="2"/><rect x="1428" y="268" width="8" height="8" rx="2"/><rect x="1486" y="268" width="8" height="8" rx="2"/>
+    </g>
+  </g>
+  <line x1="840" y1="290" x2="1500" y2="290" stroke="#1e2a37"/>
+  <text x="730" y="318" fill="#8b98a5" font-family="ui-sans-serif, sans-serif" font-size="12.5">Detección: 6 de 12 frames. Clasificación: 3 de 12. El resto reutiliza cajas y etiquetas del tracker.</text>
+  <text x="730" y="340" fill="#8b98a5" font-family="ui-sans-serif, sans-serif" font-size="12.5">La anotación y el JPEG ocurren en todos los frames publicados: el vídeo no se congela.</text>
+  <text x="730" y="366" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="11">· Si aparece una cara nueva, se detecta en el siguiente frame aunque no toque.</text>
+  <text x="730" y="386" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="11">· Si una cara no tiene prediction, se clasifica en el siguiente frame aunque no toque.</text>
+  <text x="730" y="406" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="11">· El tracker no inventa identidades: solo asocia cajas por solapamiento.</text>
+
+  <!-- IoU -->
+  <text x="716" y="474" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="12" letter-spacing="2">TRACKER · IoU (INTERSECTION OVER UNION)</text>
+  <rect x="704" y="490" width="410" height="286" rx="18" fill="#0f1620" stroke="#223041"/>
+
+  <!-- caja A -->
+  <rect x="748" y="536" width="150" height="130" rx="6" fill="#39d6ff" fill-opacity="0.10" stroke="#39d6ff" stroke-width="2"/>
+  <text x="752" y="528" fill="#39d6ff" font-family="ui-monospace, Menlo, monospace" font-size="12">caja t−1</text>
+  <!-- caja B -->
+  <rect x="816" y="584" width="150" height="130" rx="6" fill="#ffbe55" fill-opacity="0.10" stroke="#ffbe55" stroke-width="2"/>
+  <text x="930" y="730" fill="#ffbe55" font-family="ui-monospace, Menlo, monospace" font-size="12">caja t</text>
+  <!-- interseccion -->
+  <rect x="816" y="584" width="82" height="82" fill="#00ffb4" fill-opacity="0.18" stroke="#00ffb4" stroke-dasharray="4 3"/>
+  <text x="828" y="632" fill="#00ffb4" font-family="ui-monospace, Menlo, monospace" font-size="11">∩</text>
+
+  <text x="1000" y="548" fill="#e6edf3" font-family="ui-monospace, Menlo, monospace" font-size="13">IoU =</text>
+  <text x="1000" y="574" fill="#00ffb4" font-family="ui-monospace, Menlo, monospace" font-size="12">área(∩)</text>
+  <line x1="998" y1="582" x2="1092" y2="582" stroke="#5b6b7c"/>
+  <text x="1000" y="600" fill="#39d6ff" font-family="ui-monospace, Menlo, monospace" font-size="12">área(A ∪ B)</text>
+  <text x="1000" y="634" fill="#8b98a5" font-family="ui-sans-serif, sans-serif" font-size="12">Si IoU &gt; 0.3 → misma cara:</text>
+  <text x="1000" y="654" fill="#8b98a5" font-family="ui-sans-serif, sans-serif" font-size="12">se conserva la predicción y</text>
+  <text x="1000" y="674" fill="#8b98a5" font-family="ui-sans-serif, sans-serif" font-size="12">se actualiza la caja.</text>
+  <text x="1000" y="700" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="10.5">Sin match → track nuevo,</text>
+  <text x="1000" y="718" fill="#5b6b7c" font-family="ui-monospace, Menlo, monospace" font-size="10.5">prediction = None.</text>
+
+  <!-- Modos -->
+  <text x="1142" y="474" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="12" letter-spacing="2">MODOS DE OPERACIÓN</text>
+  <rect x="1130" y="490" width="418" height="286" rx="18" fill="#0f1620" stroke="#223041"/>
+
+  <rect x="1152" y="514" width="374" height="66" rx="10" fill="#141a12" stroke="#3d5a2a"/>
+  <text x="1170" y="540" fill="#00ffb4" font-family="ui-sans-serif, sans-serif" font-size="14" font-weight="600">Normal</text>
+  <text x="1170" y="562" fill="#9fb3c8" font-family="ui-sans-serif, sans-serif" font-size="12.5">cámara + modelo + cliente MJPEG</text>
+
+  <rect x="1152" y="592" width="374" height="66" rx="10" fill="#1a1410" stroke="#5a4020"/>
+  <text x="1170" y="618" fill="#ffbe55" font-family="ui-sans-serif, sans-serif" font-size="14" font-weight="600">Degradado</text>
+  <text x="1170" y="640" fill="#d6c1a4" font-family="ui-sans-serif, sans-serif" font-size="12.5">sin modelo: cajas ámbar y "modelo no cargado"</text>
+
+  <rect x="1152" y="670" width="374" height="66" rx="10" fill="#111d29" stroke="#2b4055"/>
+  <text x="1170" y="696" fill="#39d6ff" font-family="ui-sans-serif, sans-serif" font-size="14" font-weight="600">Idle</text>
+  <text x="1170" y="718" fill="#9fb3c8" font-family="ui-sans-serif, sans-serif" font-size="12.5">0 clientes: sin red, sin JPEG; solo lectura cada 250 ms</text>
+
+  <!-- footer -->
+  <rect x="48" y="848" width="1500" height="66" rx="14" fill="#0c1219" stroke="#1e2a37"/>
+  <text x="72" y="876" fill="#8b98a5" font-family="ui-monospace, Menlo, monospace" font-size="11">GARANTÍAS</text>
+  <text x="72" y="898" fill="#c9d6e2" font-family="ui-sans-serif, sans-serif" font-size="13">Un solo productor · cero inferencia sin clientes · etiquetas estables mientras la persona no cambie · el worker sobrevive a excepciones</text>
+  <text x="1288" y="900" fill="#2f3d4d" font-family="ui-monospace, Menlo, monospace" font-size="10">docs/assets/pipeline.svg</text>
+</svg>
