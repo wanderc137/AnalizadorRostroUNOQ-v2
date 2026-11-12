@@ -258,7 +258,7 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.08);pa
   .section{padding:72px 0}
 }
 </style>
-</head>
+<link rel="stylesheet" href="assets/community.css?v=5"></head>
 <body style="--accent:#22D3EE;--accent2:#E879F9">
 <div class="grid-overlay"></div>
 <div class="glow one"></div>
@@ -275,6 +275,7 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.08);pa
       <a href="#como">Cómo funciona</a>
       <a href="#arquitectura">Arquitectura</a>
       <a href="#docs">Documentación</a>
+      <a href="#comunidad">Comunidad</a>
       <a class="btn btn-ghost" style="padding:9px 15px" href="https://github.com/wanderc137/AnalizadorRostroUNOQ-v2" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </div>
@@ -393,8 +394,8 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.08);pa
   <div class="wrap">
     <div class="cta-card reveal">
       <div class="kicker" style="justify-content:center">Portfolio · Arduino UNO Q</div>
-      <h2>¿Construimos algo así?</h2>
-      <p>Si necesitás visión artificial en el borde, analítica de audiencia con privacidad o un prototipo de cámara inteligente, este proyecto es una base real y documentada.</p>
+      <h2>¿Te animás?</h2>
+      <p>Usá esto como base y referencia para llevar visión artificial a una placa, procesar video local y medir edad/género sin subir frames a Internet. Este proyecto es la prueba de que se puede hacer con componentes reales.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="https://github.com/wanderc137" target="_blank" rel="noopener">Ver más proyectos <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn btn-ghost" href="https://github.com/wanderc137/AnalizadorRostroUNOQ-v2" target="_blank" rel="noopener">Explorar el código</a>
@@ -446,5 +447,8 @@ footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.08);pa
   document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
 })();
 </script>
+
+<script>window.PORTFOLIO_COMMUNITY = {"account": "wanderc137", "repo": "AnalizadorRostroUNOQ-v2", "coinNamespace": "wanderc137-analizadorrostrounoq-v2-coins-v1", "faqs": [{"q": "¿Qué detecta?", "a": "Rostros con <b>YuNet</b>, edad y género con un <b>ONNX UTKFace MobileNetV2</b>; también tiene fallback Caffe Levi & Hassner."}, {"q": "¿Qué precisión tiene?", "a": "84,56 % de género, 48,17 % de edad exacta y 83,8 % ±1 bucket en el conjunto de validación; no es un sistema biométrico."}, {"q": "¿El video sale de la placa?", "a": "No. La cámara entra localmente, el backend procesa y sirve <b>MJPEG</b>; no se suben frames a la nube."}, {"q": "¿Qué cámara funciona?", "a": "Una cámara IP por HTTP fue validada; la Brio USB no se probó por falta de hub USB-C con PD."}, {"q": "¿Cuáles son los límites?", "a": "Sesgo del dataset, edad aproximada, ~15 fps en la UNO Q y una sola cámara por instancia."}]};</script>
+<script src="assets/community.js?v=5" defer></script>
 </body>
 </html>
