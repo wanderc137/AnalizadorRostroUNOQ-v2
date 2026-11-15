@@ -1491,3 +1491,55 @@ Enlaces oficiales y de comunidad. La versión con una línea de utilidad por enl
 ---
 
 **Resumen en una línea:** una webcam USB o una cámara IP, una UNO Q y un FastAPI con OpenCV que detecta caras con YuNet, las sigue con IoU y estima género/rango de edad en local, sin nube, sin MCU y sin guardar imágenes por defecto.
+
+## Ficha de evaluación
+
+**Madurez global: 4.5/5**
+
+| Criterio | Nota | Evidencia |
+|---|---:|---|
+| Madurez | 5/5 | Segunda iteración desplegada como unoq-app-v2 en 192.168.10.75:8001, con arranque automático, timings en /api/status y red de demo verificada. |
+| Reproducibilidad | 4/5 | Setup y despliegue idempotentes y YuNet de 228 KB dentro del repo; el ONNX de género y edad sigue en un release y el benchmark usó una sola imagen sintética. |
+| Documentación | 5/5 | README, datasheet, developer, V2.md y bitácora con benchmark, red de demo, cold start y los tres fallos de conectividad reproducidos. |
+| Honestidad de límites | 5/5 | Rotula el benchmark como no controlado y deja explícitos el tracker sin identidad, la Brio sin probar, el multiusuario sin medir y el cold start pendiente. |
+| Valor demostrativo | 5/5 | 21,2 fps sintéticos frente a 7,5 de la v1 y 14,4 fps con IP Webcam, con detección de 87 ms y JPEG de 4,8 ms instrumentados. |
+| Facilidad de despliegue | 3/5 | Los scripts y systemd están resueltos, pero exige modelo autenticado, red de demo con IP fija y un hub USB-C con PD para cámara USB. |
+
+Sirve a quien necesite una versión más madura y medible del analizador, con mejor detección y diagnóstico por etapa. La limitación que más pesa es que la precisión de género y edad no cambió y que el benchmark sigue siendo de una sola escena.
+
+## Lo que no funcionó
+
+### v2 · red de demo — Router inalcanzable por un perfil viejo
+
+La notebook conservaba el perfil Ethernet teltonika-tmp con IP estática 192.168.1.50/24 y sin gateway, que bloqueaba el DHCP del router. Se creó un perfil DHCP limpio con prioridad 100 y se verificó que el equipo estaba en 192.168.10.1, no en la IP de fábrica.
+
+### v2 · cámara IP — Tres causas encadenadas para un video en negro
+
+El teléfono volvía a la red de casa, el puerto 8080 estaba cerrado o dozeado y el navegador apuntaba a la v1 en 8000. Se fijó la red con reserva DHCP .249, se reinició IP Webcam y se actualizó el marcador a 8001 antes de volver a probar.
+
+### v2 · arranque en frío — La placa se quedaba en la red de casa
+
+El router tarda 2-3 minutos en levantar el WiFi y NetworkManager permanece en el primer perfil autoconnect, sin roaming al de prioridad 20. Se documentó el orden de encendido y el nmcli connection up manual; desactivar el autoconnect de casa quedó pendiente.
+
+### v2 · tracker IoU — Cajas que se intercambian sin identidad
+
+El tracker asocia por solapamiento, no por identidad, así que dos rostros que se cruzan pueden intercambiar o perder su predicción. Se mitigó con TRACK_MAX_MISSES=2 y umbral IoU 0,3, y se declaró que sin embeddings el problema no se elimina.
+
+## Preguntas típicas
+
+**¿Qué cambia respecto de la v1?**
+
+Reemplaza Haar por YuNet con fallback, agrega tracker IoU y separa detección y clasificación en ciclos distintos, con timings en /api/status. Corre como proyecto y servicio independientes en el puerto 8001, sin tocar la instalación de la v1.
+
+**¿Mejora la precisión de género y edad?**
+
+No. Usa el mismo modelo ONNX o Caffe, así que las métricas de 84,56 % de género y 48,17 % de edad exacta no cambian. La mejora es de estabilidad de detección, FPS y capacidad de diagnóstico.
+
+**¿Cómo se despliega?**
+
+Se ejecuta scripts/deploy_unoq.sh con --adb o --ssh, --setup y --model, y queda el servicio unoq-app-v2. La UI se abre en http://IP:8001 y el arranque y parada se hacen con los scripts start/stop del proyecto.
+
+**¿Qué se puede reutilizar?**
+
+El detector YuNet con fallback Haar, el tracker IoU con sus umbrales, el pipeline de dos ciclos y la instrumentación de tiempos. También los scripts de perfil de red y la guía de arranque en frío para otras apps con IP fija.
+
