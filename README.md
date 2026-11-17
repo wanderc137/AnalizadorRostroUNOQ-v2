@@ -798,10 +798,10 @@ Campos clave:
 
 El campo **IP Webcam** de la tarjeta de vídeo acepta cualquiera de estas formas:
 
-- solo la IP: `192.168.10.75` → se completa `http://192.168.10.75:8080/video`;
-- IP y puerto: `192.168.10.75:8080`;
-- URL completa: `http://192.168.10.75:8080/video` (también `https`, `rtsp`, `rtmp`);
-- una URL de foto: `http://192.168.10.75:8080/photo.jpg` → se usa `/video`.
+- solo la IP: `192.168.10.249` → se completa `http://192.168.10.249:8080/video`;
+- IP y puerto: `192.168.10.249:8080`;
+- URL completa: `http://192.168.10.249:8080/video` (también `https`, `rtsp`, `rtmp`);
+- una URL de foto: `http://192.168.10.249:8080/photo.jpg` → se usa `/video`.
 
 **Probar** descarga un still de `/photo.jpg` y devuelve la resolución sin cortar el stream actual. **Aplicar** detiene el pipeline, reconecta la cámara, espera hasta 8 s el primer frame y guarda la URL canónica en `CAMERA_SOURCE` dentro de `.env`; si la IP nueva no responde, restaura la fuente anterior para no dejar la demo sin vídeo. También podés pulsar **Enter** dentro del campo para aplicar.
 

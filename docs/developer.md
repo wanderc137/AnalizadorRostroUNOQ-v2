@@ -225,8 +225,8 @@ class Camera:
 
 `POST /api/camera/source` orquesta `pipeline.stop()` → `camera.stop()` → `camera.set_source()` → `camera.start()` → espera `is_ok` (8 s) → `pipeline.start()`. La normalización vive en `app/ipwebcam.py` y replica la lógica de `superfoto-unoq`:
 
-- `192.168.10.75` → `http://192.168.10.75:8080/video`;
-- `192.168.10.75:8080` → misma URL canónica;
+- `192.168.10.249` → `http://192.168.10.249:8080/video`;
+- `192.168.10.249:8080` → misma URL canónica;
 - `/photo.jpg`, `/stream` o `/` → `/video`;
 - se conserva un prefijo propio (`/cam/video`);
 - `https` sin puerto también usa 8080; `rtsp://` y `rtmp://` se respetan tal cual;
@@ -488,7 +488,7 @@ Cualquier excepción se captura **por iteración**: se registra, se guarda en `_
 | `GET /api/config` | `settings.public_config()`. |
 | `GET /healthz` | `{"ok": True}`. |
 | `GET /api/camera/probe?url=...` | Normaliza la IP/URL y descarga `/photo.jpg` (3 s) para validarla sin cortar el stream; 400 si inválida, 502 si no responde. |
-| `POST /api/camera/source` | Body `{"source": "192.168.10.75:8080"}` (o `ip`). Detiene pipeline y cámara, aplica la fuente, espera `is_ok` hasta 8 s, persiste `CAMERA_SOURCE` en `.env` y reanuda; rollback a la fuente anterior si falla. |
+| `POST /api/camera/source` | Body `{"source": "192.168.10.249:8080"}` (o `ip`). Detiene pipeline y cámara, aplica la fuente, espera `is_ok` hasta 8 s, persiste `CAMERA_SOURCE` en `.env` y reanuda; rollback a la fuente anterior si falla. |
 | `POST /api/camera/start` | Si ya corre, mensaje; si no, detiene pipeline y cámara, arranca cámara, espera `is_ok` hasta 8 s; 503 si falla. |
 | `POST /api/camera/stop` | Detiene cámara. |
 | `POST /api/snapshot` | Rate-limit atómico (429 + `Retry-After`), valida `SNAP_FOLDER` (400), 503 si deshabilitado/sin frame, guarda JPEG con PIL o el JPEG del pipeline o `imencode`, 500 si falla. Nombre `snapshot_%Y%m%d_%H%M%S_%f` recortado a ms. |

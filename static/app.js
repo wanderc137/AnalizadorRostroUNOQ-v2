@@ -584,7 +584,7 @@
   async function probeCameraSource() {
     const value = els.cameraSource ? els.cameraSource.value.trim() : "";
     if (!value) {
-      setSourceInfo("Escribí la IP del teléfono (ej: 192.168.10.75:8080).", "warn");
+      setSourceInfo("Escribí la IP del teléfono (ej: 192.168.10.249:8080).", "warn");
       if (els.cameraSource) els.cameraSource.focus();
       return;
     }
@@ -613,7 +613,7 @@
   async function applyCameraSource() {
     const value = els.cameraSource ? els.cameraSource.value.trim() : "";
     if (!value) {
-      setSourceInfo("Escribí la IP del teléfono (ej: 192.168.10.75:8080).", "warn");
+      setSourceInfo("Escribí la IP del teléfono (ej: 192.168.10.249:8080).", "warn");
       if (els.cameraSource) els.cameraSource.focus();
       return;
     }
