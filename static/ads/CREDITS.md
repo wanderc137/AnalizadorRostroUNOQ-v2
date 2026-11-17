@@ -14,7 +14,7 @@ no se modificó su contenido.
 | `female-young.jpg` | Femenino · menor de 18 | Nintendo Switch + auriculares gamer |
 | `female-mid.jpg` | Femenino · 19 a 50 | Smartphone + audífonos + smartwatch |
 | `female-senior.jpg` | Femenino · mayor de 50 | Crucero con descuento |
-| `travel-default.svg` | Sin rostro detectado | Ilustración vectorial original del proyecto; sin dependencia externa |
+| `travel-default.svg` | Sin rostro detectado | Ilustración vectorial original del proyecto, rediseñada con paleta diurna saturada; sin dependencia externa |
 | `default.jpg` | Respaldo histórico | Fotografía de Unsplash (`photo-1518770660439-4636190af475`), sin uso en la UI actual |
 
 Las creatividades son material de demostración. Los textos, precios y marcas

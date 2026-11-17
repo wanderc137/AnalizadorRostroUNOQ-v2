@@ -62,9 +62,9 @@
    */
   const ADS = {
     default: {
-      image: "/static/ads/travel-default.svg",
+      image: "/static/ads/travel-default.svg?v=2.2.0",
       position: "center",
-      accent: "#ffb45e",
+      accent: "#ff7a45",
       badge: "VIAJES",
       kicker: "TEMPORADA 2026",
       title: "El destino te está esperando.",
@@ -76,6 +76,7 @@
       priceNote: "por persona · ida y vuelta",
       cta: "Ver destinos",
       reason: "Sin rostro detectado · modo viajes.",
+      overlay: true,
     },
     male_young: {
       image: "/static/ads/male-young.jpg",
@@ -360,6 +361,7 @@
         creativeOnly ? `url("${ad.image}")` : "none"
       );
       els.showcase.classList.toggle("showcase--creative", creativeOnly);
+      els.showcase.classList.toggle("showcase--default", !creativeOnly);
     }
     if (els.adContent) els.adContent.hidden = creativeOnly;
     if (els.adImage) {
