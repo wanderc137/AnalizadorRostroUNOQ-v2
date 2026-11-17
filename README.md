@@ -828,7 +828,7 @@ Detalles de implementación:
 - La banda se calcula con el punto medio del bucket (`10-19` → 14.5; `20-29` → 24.5; `50-59` → 54.5); por eso los buckets del modelo se agrupan en `< 19`, `19–50` y `> 50`.
 - El anuncio exige `gender_confidence >= 0.55` y `age_confidence >= 0.25`. El overlay del vídeo sigue usando `CONF_THRESHOLD` (0.6) y prefija con `~` las clases de baja confianza, para que la etiqueta y el anuncio cuenten la misma historia.
 - Las seis creatividades por segmento ya incluyen su propio texto y se muestran completas (`object-fit: contain`) sin overlay duplicado; el anuncio de viajes por defecto conserva el copy superpuesto.
-- Los textos, precios y marcas son **ficticios**: es una demostración, no una tienda real.
+- Las creatividades son material de **demostración**: los textos, precios y marcas que aparecen no representan ofertas reales.
 - Las imágenes viven en `static/ads/` y se sirven localmente; no hay peticiones a terceros en tiempo de ejecución. Créditos en `static/ads/CREDITS.md`.
 - No se guarda historial de anuncios ni un perfil de la persona: el creativo se decide en memoria con el frame actual y se pierde al recargar.
 - Para cambiar creativos, editá el objeto `ADS` en `static/app.js` y reemplazá los JPG de `static/ads/`.

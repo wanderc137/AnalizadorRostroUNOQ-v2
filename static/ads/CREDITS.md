@@ -17,5 +17,5 @@ no se modificó su contenido.
 | `travel-default.svg` | Sin rostro detectado | Ilustración vectorial original del proyecto; sin dependencia externa |
 | `default.jpg` | Respaldo histórico | Fotografía de Unsplash (`photo-1518770660439-4636190af475`), sin uso en la UI actual |
 
-Los textos, precios y marcas de los anuncios son ficticios y forman parte de
-la demostración. No representan ofertas reales.
+Las creatividades son material de demostración. Los textos, precios y marcas
+que aparecen no representan ofertas reales.

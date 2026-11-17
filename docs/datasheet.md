@@ -372,7 +372,7 @@ La demo elige un creativo local según género y banda de edad:
 | Femenino | > 50 | Crucero |
 | Sin rostro / baja confianza | — | Viajes |
 
-Bandas por punto medio del bucket (`10-19` → 14.5; `20-29` → 24.5; `50-59` → 54.5). Umbrales: `gender_confidence >= 0.55` y `age_confidence >= 0.25`. Las creatividades por segmento ya incluyen su texto y se muestran completas, sin overlay duplicado. Los textos, precios y marcas son **ficticios**. No hay historial ni perfil: el creativo se decide en memoria con el frame actual.
+Bandas por punto medio del bucket (`10-19` → 14.5; `20-29` → 24.5; `50-59` → 54.5). Umbrales: `gender_confidence >= 0.55` y `age_confidence >= 0.25`. Las creatividades por segmento ya incluyen su texto y se muestran completas, sin overlay duplicado. Son material de **demostración**: los textos, precios y marcas no representan ofertas reales. No hay historial ni perfil: el creativo se decide en memoria con el frame actual.
 
 ---
 
