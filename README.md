@@ -796,7 +796,7 @@ Campos clave:
 
 ### IP Webcam desde la interfaz
 
-El campo **IP Webcam** de la tarjeta de vídeo acepta cualquiera de estas formas:
+La barra **IP Webcam** de la parte superior acepta cualquiera de estas formas:
 
 - solo la IP: `192.168.10.249` → se completa `http://192.168.10.249:8080/video`;
 - IP y puerto: `192.168.10.249:8080`;

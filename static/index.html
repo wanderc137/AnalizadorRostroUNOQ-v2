@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0d12">
+  <meta http-equiv="Cache-Control" content="no-store">
   <title>Analizador de Rostros · Arduino UNO Q</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=2.1.0">
 </head>
 <body>
   <div class="ambient" aria-hidden="true"></div>
@@ -24,6 +25,19 @@
       <span id="badge-fps" class="badge badge--idle">FPS 0.0</span>
     </div>
   </header>
+
+  <!-- Configuración principal: la única acción manual es escribir la IP. -->
+  <section class="card source-bar" aria-label="Configuración de IP Webcam">
+    <label class="source-bar-label" for="camera-source">IP Webcam</label>
+    <input id="camera-source" type="text" placeholder="192.168.10.249:8080"
+           autocomplete="off" spellcheck="false" inputmode="url"
+           autocapitalize="off" aria-describedby="source-info">
+    <button id="btn-probe-source" class="btn btn--ghost" type="button">Probar</button>
+    <button id="btn-apply-source" class="btn btn--primary" type="button">Aplicar</button>
+    <p id="source-info" class="source-info" role="status" aria-live="polite">
+      Ingresá la IP del teléfono con IP Webcam. Probar valida; Aplicar reconecta y guarda.
+    </p>
+  </section>
 
   <main class="layout">
     <!-- Gran formato publicitario: se elige según género y rango de edad. -->
@@ -121,18 +135,6 @@
           </div>
         </div>
 
-        <div class="source-row">
-          <label for="camera-source">IP Webcam</label>
-          <input id="camera-source" type="text" placeholder="192.168.10.249:8080"
-                 autocomplete="off" spellcheck="false" inputmode="url"
-                 autocapitalize="off" aria-describedby="source-info">
-          <button id="btn-probe-source" class="btn btn--ghost" type="button">Probar</button>
-          <button id="btn-apply-source" class="btn btn--primary" type="button">Aplicar</button>
-        </div>
-        <p id="source-info" class="source-info" role="status" aria-live="polite">
-          IP o URL del teléfono. Aplicar reconecta la cámara y guarda el valor.
-        </p>
-
         <div class="controls">
           <button id="btn-start" class="btn btn--primary" type="button">Iniciar cámara</button>
           <button id="btn-stop" class="btn btn--ghost" type="button">Detener</button>
@@ -159,6 +161,6 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2.1.0"></script>
 </body>
 </html>

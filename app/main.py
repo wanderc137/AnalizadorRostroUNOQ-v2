@@ -535,7 +535,9 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
         index_file = STATIC_DIR / "index.html"
         if not index_file.is_file():
             raise HTTPException(status_code=500, detail="static/index.html no existe")
-        return FileResponse(index_file)
+        return FileResponse(
+            index_file, headers={"Cache-Control": "no-store"}
+        )
 
     @app.get("/api/status")
     async def api_status():

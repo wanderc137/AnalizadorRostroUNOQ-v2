@@ -824,14 +824,15 @@ body {
   color: var(--text);
 }
 
-.source-row {
+.source-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  padding: 12px 16px;
 }
 
-.source-row label {
+.source-bar-label {
   color: var(--muted);
   font-size: 0.62rem;
   font-weight: 700;
@@ -840,8 +841,8 @@ body {
   white-space: nowrap;
 }
 
-.source-row input {
-  flex: 1 1 150px;
+.source-bar input {
+  flex: 1 1 220px;
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -852,13 +853,18 @@ body {
   font-size: 0.72rem;
 }
 
-.source-row input:focus {
+.source-bar input:focus {
   outline: 1px solid var(--accent);
   border-color: var(--accent);
 }
 
-.source-row .btn {
+.source-bar .btn {
   flex: 0 0 auto;
+}
+
+.source-bar .source-info {
+  flex: 1 1 100%;
+  margin: 0;
 }
 
 .source-info {
