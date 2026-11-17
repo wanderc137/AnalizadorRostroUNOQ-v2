@@ -45,11 +45,11 @@ def normalize_camera_source(value: str) -> str:
     Acepta todas estas formas (y devuelve siempre lo mismo)::
 
         192.168.10.75
-        192.168.10.75:8080
-        http://192.168.10.75:8080
-        http://192.168.10.75:8080/video
-        https://192.168.10.75:8080/video
-        http://192.168.10.75:8080/photo.jpg
+        192.168.10.249:8080
+        http://192.168.10.249:8080
+        http://192.168.10.249:8080/video
+        https://192.168.10.249:8080/video
+        http://192.168.10.249:8080/photo.jpg
 
     Reglas: si falta el esquema se usa ``http``; si falta el puerto se usa
     8080; un path vacío, ``/`` o ``/photo.jpg`` se convierte en ``/video``.
@@ -58,7 +58,7 @@ def normalize_camera_source(value: str) -> str:
     """
     if not isinstance(value, str) or not value.strip():
         raise SourceError(
-            "Escribí la IP o URL del teléfono (ej: 192.168.10.75:8080)"
+            "Escribí la IP o URL del teléfono (ej: 192.168.10.249:8080)"
         )
     raw = value.strip()
     if len(raw) > MAX_SOURCE_LENGTH:
@@ -85,7 +85,7 @@ def normalize_camera_source(value: str) -> str:
     host = parts.hostname
     if not host:
         raise SourceError(
-            "La URL no tiene host/IP (ej: 192.168.10.75:8080)"
+            "La URL no tiene host/IP (ej: 192.168.10.249:8080)"
         )
     if any(ch.isspace() for ch in (parts.netloc or "")):
         raise SourceError("El host no puede tener espacios")

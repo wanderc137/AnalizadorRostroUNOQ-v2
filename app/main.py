@@ -562,7 +562,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
                 status_code=400,
                 detail=(
                     "Falta el parámetro url "
-                    "(ej: /api/camera/probe?url=192.168.10.75:8080)"
+                    "(ej: /api/camera/probe?url=192.168.10.249:8080)"
                 ),
             )
         try:
@@ -581,7 +581,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     async def api_camera_source(request: Request):
         """Cambia la fuente de cámara (IP Webcam) en caliente.
 
-        Acepta ``{"source": "192.168.10.75:8080"}`` (también ``ip``). Detiene
+        Acepta ``{"source": "192.168.10.249:8080"}`` (también ``ip``). Detiene
         el pipeline, reconecta la cámara, espera el primer frame y persiste
         ``CAMERA_SOURCE`` en ``.env``. Si la fuente nueva no responde,
         restaura la anterior para no dejar la demo sin vídeo.
@@ -596,7 +596,7 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
                 status_code=400,
                 detail=(
                     'El cuerpo debe ser JSON: '
-                    '{"source": "192.168.10.75:8080"}'
+                    '{"source": "192.168.10.249:8080"}'
                 ),
             )
         raw = payload.get("source", payload.get("ip", ""))
