@@ -33,8 +33,13 @@ from fastapi.responses import FileResponse, JSONResponse, StreamingResponse  # n
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
 from app.camera import Camera  # noqa: E402
-from app.config import Settings, load_settings  # noqa: E402
+from app.config import Settings, load_settings, persist_camera_source  # noqa: E402
 from app.detector import FaceDetector, FaceResult  # noqa: E402
+from app.ipwebcam import (  # noqa: E402
+    SourceError,
+    normalize_camera_source,
+    probe_ip_webcam,
+)
 from app.models_loader import ModelHandle, load_model  # noqa: E402
 
 LOG = logging.getLogger("analizador")
@@ -258,7 +263,7 @@ class VideoPipeline:
         )
         cv2.putText(
             frame,
-            "Conecta la cámara USB o configura CAMERA_SOURCE",
+            "Conecta la camara USB o carga la IP de IP Webcam",
             (int(width * 0.08), int(height * 0.56)),
             cv2.FONT_HERSHEY_SIMPLEX,
             max(0.4, scale - 0.15),
@@ -543,6 +548,125 @@ def create_app(settings: Optional[Settings] = None) -> FastAPI:
     @app.get("/healthz", include_in_schema=False)
     async def healthz():
         return {"ok": True}
+
+    @app.get("/api/camera/probe")
+    async def api_camera_probe(request: Request, url: str = ""):
+        """Valida una IP/URL de IP Webcam con un still de ``/photo.jpg``.
+
+        No abre el stream ni toca la cámara actual. Se usa desde el botón
+        "Probar" de la interfaz antes de aplicar el cambio.
+        """
+        _check_api_token(cfg, request)
+        if not url.strip():
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Falta el parámetro url "
+                    "(ej: /api/camera/probe?url=192.168.10.75:8080)"
+                ),
+            )
+        try:
+            info = await asyncio.to_thread(probe_ip_webcam, url, 3.0)
+        except SourceError as exc:
+            status = 400 if exc.kind == "invalid" else 502
+            raise HTTPException(status_code=status, detail=str(exc)) from exc
+        except Exception as exc:  # pragma: no cover - defensivo
+            raise HTTPException(
+                status_code=502,
+                detail=f"No se pudo probar la cámara: {exc}",
+            ) from exc
+        return JSONResponse(info)
+
+    @app.post("/api/camera/source")
+    async def api_camera_source(request: Request):
+        """Cambia la fuente de cámara (IP Webcam) en caliente.
+
+        Acepta ``{"source": "192.168.10.75:8080"}`` (también ``ip``). Detiene
+        el pipeline, reconecta la cámara, espera el primer frame y persiste
+        ``CAMERA_SOURCE`` en ``.env``. Si la fuente nueva no responde,
+        restaura la anterior para no dejar la demo sin vídeo.
+        """
+        _check_api_token(cfg, request)
+        try:
+            payload = await request.json()
+        except Exception:
+            payload = None
+        if not isinstance(payload, dict):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    'El cuerpo debe ser JSON: '
+                    '{"source": "192.168.10.75:8080"}'
+                ),
+            )
+        raw = payload.get("source", payload.get("ip", ""))
+        try:
+            source = normalize_camera_source(raw)
+        except SourceError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+        previous_source = cfg.camera_source or cfg.camera_index
+        previous_config = cfg.camera_source
+
+        async with control_lock:
+            await asyncio.to_thread(pipeline.stop)
+            await asyncio.to_thread(camera.stop)
+            try:
+                camera.set_source(source)
+            except Exception as exc:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"No se pudo configurar la fuente: {exc}",
+                ) from exc
+            cfg.camera_source = source
+            await asyncio.to_thread(camera.start)
+
+            deadline = time.monotonic() + CAMERA_START_TIMEOUT
+            while time.monotonic() < deadline:
+                if camera.is_ok:
+                    break
+                await asyncio.sleep(0.05)
+
+            if not camera.is_ok:
+                detail = (
+                    f"No se pudo abrir {source} en {CAMERA_START_TIMEOUT:g} s. "
+                    + (
+                        camera.last_error
+                        or "Verificá que IP Webcam esté activo y en la misma red."
+                    )
+                )
+                # Rollback: la demo no debe quedar sin cámara por una IP mala.
+                await asyncio.to_thread(camera.stop)
+                cfg.camera_source = previous_config
+                try:
+                    camera.set_source(previous_source)
+                    await asyncio.to_thread(camera.start)
+                    pipeline.start()
+                except Exception:  # pragma: no cover - defensivo
+                    LOG.exception("No se pudo restaurar la cámara anterior")
+                LOG.error("Cambio de fuente fallido: %s", detail)
+                raise HTTPException(status_code=503, detail=detail)
+
+            pipeline.start()
+            persisted = False
+            if bool(payload.get("persist", True)):
+                persisted = await asyncio.to_thread(
+                    persist_camera_source, source
+                )
+            LOG.info(
+                "Fuente de cámara actualizada a %s (persistida=%s)",
+                source,
+                persisted,
+            )
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "source": source,
+                    "persisted": persisted,
+                    "camera": camera.status(),
+                    "pipeline_running": pipeline.is_running,
+                }
+            )
 
     @app.post("/api/camera/start")
     async def api_camera_start(request: Request):

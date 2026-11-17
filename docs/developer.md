@@ -30,6 +30,7 @@
 app/
 ├── config.py          Settings, .env, validación, rutas seguras
 ├── camera.py          captura en hilo, reconexión, último frame
+├── ipwebcam.py        normalización IP/URL y prueba con /photo.jpg
 ├── detector.py        YuNet/Haar, tracker IoU, overlay
 ├── models_loader.py   ONNX/Caffe, preprocesado, FacePrediction
 └── main.py            FastAPI, VideoPipeline, endpoints, MJPEG
@@ -171,7 +172,7 @@ warnings: list[str]
 
 ### `public_config()`
 
-Expone solo lo que la UI necesita: dimensiones, FPS, backends, `yunet_input_width`, `detect_every_n`, `track_iou_threshold`, `track_max_misses`, `infer_every_n`, `conf_threshold`, `snap_enabled`, `snapshot_min_interval`, `auth_enabled`, `age_buckets`, `camera_control=True`, `camera_type` (`url`/`usb`), `snapshot_endpoint`, `jpeg_quality`. **Nunca** `API_TOKEN`, rutas absolutas ni credenciales.
+Expone solo lo que la UI necesita: dimensiones, FPS, backends, `yunet_input_width`, `detect_every_n`, `track_iou_threshold`, `track_max_misses`, `infer_every_n`, `conf_threshold`, `snap_enabled`, `snapshot_min_interval`, `auth_enabled`, `age_buckets`, `camera_control=True`, `camera_type` (`url`/`usb`), `camera_source`, `camera_index`, `snapshot_endpoint`, `jpeg_quality`. **Nunca** `API_TOKEN`, rutas absolutas ni credenciales.
 
 ### `ensure_snap_folder()`
 
@@ -197,6 +198,7 @@ class Camera:
                  fps_target=15, reconnect_delay=2.0): ...
     def start(self) -> None
     def stop(self, join_timeout=3.0) -> None
+    def set_source(self, source: int | str) -> None
     def read(self) -> tuple[np.ndarray | None, float]
     def is_ok(self) -> bool
     @property
@@ -217,6 +219,20 @@ class Camera:
 - `_loop()`: si el `VideoCapture` no está abierto, reabre; si falla 20 veces seguidas, libera, espera `reconnect_delay` y reintenta. Publica el frame bajo lock y actualiza FPS con EMA `0.9/0.1`.
 - `is_ok`: `running and frame is not None and (now - frame_ts) < 3.0`.
 - `status()`: `camera_ok`, `running`, `camera_index`, `camera_type` (`url`/`usb`), `fps`, `resolution`, `error`.
+- `set_source(source)` exige la cámara detenida: libera el `VideoCapture`, actualiza `source`/`_is_url`/`index` y deja el error en "Cámara no inicializada".
+
+### Cambio de fuente en caliente (IP Webcam)
+
+`POST /api/camera/source` orquesta `pipeline.stop()` → `camera.stop()` → `camera.set_source()` → `camera.start()` → espera `is_ok` (8 s) → `pipeline.start()`. La normalización vive en `app/ipwebcam.py` y replica la lógica de `superfoto-unoq`:
+
+- `192.168.10.75` → `http://192.168.10.75:8080/video`;
+- `192.168.10.75:8080` → misma URL canónica;
+- `/photo.jpg`, `/stream` o `/` → `/video`;
+- se conserva un prefijo propio (`/cam/video`);
+- `https` sin puerto también usa 8080; `rtsp://` y `rtmp://` se respetan tal cual;
+- IPv6 entre corchetes, rechazo de puertos fuera de rango y de esquemas desconocidos.
+
+`GET /api/camera/probe?url=...` descarga `/photo.jpg` (3 s) y devuelve resolución y tamaño sin abrir el stream. Si la IP nueva no da frames, `POST /api/camera/source` restaura la fuente anterior, reanuda el pipeline y responde 503 con el detalle. Al tener éxito, `persist_camera_source()` reescribe solo la línea `CAMERA_SOURCE` de `.env` (devuelve `persisted=false` si el FS es de solo lectura, sin abortar el cambio).
 
 ### Errores típicos
 
@@ -471,6 +487,8 @@ Cualquier excepción se captura **por iteración**: se registra, se guarda en `_
 | `GET /api/status` | `pipeline.status()`. |
 | `GET /api/config` | `settings.public_config()`. |
 | `GET /healthz` | `{"ok": True}`. |
+| `GET /api/camera/probe?url=...` | Normaliza la IP/URL y descarga `/photo.jpg` (3 s) para validarla sin cortar el stream; 400 si inválida, 502 si no responde. |
+| `POST /api/camera/source` | Body `{"source": "192.168.10.75:8080"}` (o `ip`). Detiene pipeline y cámara, aplica la fuente, espera `is_ok` hasta 8 s, persiste `CAMERA_SOURCE` en `.env` y reanuda; rollback a la fuente anterior si falla. |
 | `POST /api/camera/start` | Si ya corre, mensaje; si no, detiene pipeline y cámara, arranca cámara, espera `is_ok` hasta 8 s; 503 si falla. |
 | `POST /api/camera/stop` | Detiene cámara. |
 | `POST /api/snapshot` | Rate-limit atómico (429 + `Retry-After`), valida `SNAP_FOLDER` (400), 503 si deshabilitado/sin frame, guarda JPEG con PIL o el JPEG del pipeline o `imencode`, 500 si falla. Nombre `snapshot_%Y%m%d_%H%M%S_%f` recortado a ms. |

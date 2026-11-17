@@ -786,12 +786,24 @@ Campos clave:
 | **Iniciar cámara** | `POST /api/camera/start`. Reconstruye cámara + pipeline y espera a que haya frames. |
 | **Detener** | `POST /api/camera/stop`. Detiene el worker y libera `/dev/video0`. |
 | **Snapshot** | Solo visible si `SNAP_FOLDER` está configurado. Guarda un JPG y muestra la ruta. |
+| **IP Webcam** | Campo para escribir la IP o URL del teléfono. **Probar** valida con `/photo.jpg`; **Aplicar** reconecta la cámara y guarda `CAMERA_SOURCE` en `.env`. |
 | **Token API** | Campo visible si `API_TOKEN` está definido. Se guarda en `sessionStorage` (no en cookies). |
 | **Badges** | Cámara, modelo y FPS con colores ok/warn/bad. |
 | **Panel de estado** | Cámara, backend, modelo, resolución, frecuencia de inferencia y FPS. |
 | **Anuncio contextual** | Gran formato a la izquierda. Cambia según género y banda de edad del rostro más grande. Los anuncios son ficticios y locales. |
 | **Vista en vivo** | Miniatura MJPEG a la derecha, debajo del estado; allí viven los controles y el token. |
 | **Aviso de privacidad** | Pie de página: procesamiento local y snapshots desactivados por defecto. |
+
+### IP Webcam desde la interfaz
+
+El campo **IP Webcam** de la tarjeta de vídeo acepta cualquiera de estas formas:
+
+- solo la IP: `192.168.10.75` → se completa `http://192.168.10.75:8080/video`;
+- IP y puerto: `192.168.10.75:8080`;
+- URL completa: `http://192.168.10.75:8080/video` (también `https`, `rtsp`, `rtmp`);
+- una URL de foto: `http://192.168.10.75:8080/photo.jpg` → se usa `/video`.
+
+**Probar** descarga un still de `/photo.jpg` y devuelve la resolución sin cortar el stream actual. **Aplicar** detiene el pipeline, reconecta la cámara, espera hasta 8 s el primer frame y guarda la URL canónica en `CAMERA_SOURCE` dentro de `.env`; si la IP nueva no responde, restaura la fuente anterior para no dejar la demo sin vídeo. También podés pulsar **Enter** dentro del campo para aplicar.
 
 ### Interpretación de etiquetas
 
@@ -1275,6 +1287,7 @@ AnalizadorRostroUNOQ-v2/
 │   ├── main.py                   ← FastAPI + VideoPipeline
 │   ├── config.py                 ← settings + validación + rutas seguras
 │   ├── camera.py                 ← captura V4L2/FFMPEG con hilo y reconexión
+│   ├── ipwebcam.py               ← normalización IP/URL + prueba con /photo.jpg
 │   ├── detector.py               ← YuNet + fallback Haar + tracker IoU + overlay
 │   └── models_loader.py          ← ONNX / Caffe / degradado
 ├── python/

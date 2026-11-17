@@ -137,6 +137,50 @@ def _resolve_snap_folder(raw: str, warnings: List[str]) -> Tuple[Optional[Path],
     return path, ""
 
 
+def persist_camera_source(source: str) -> bool:
+    """Guarda ``CAMERA_SOURCE`` en ``.env`` sin tocar el resto del archivo.
+
+    Se llama cuando el usuario aplica una IP Webcam desde la interfaz. Si el
+    archivo no existe, se crea; si existe, se reemplaza la línea de
+    ``CAMERA_SOURCE`` (con o sin ``export``) o se agrega al final. Devuelve
+    ``False`` si el sistema de archivos no permite escribir, en cuyo caso la
+    fuente igual queda aplicada en runtime.
+    """
+    try:
+        existing = (
+            ENV_FILE.read_text(encoding="utf-8") if ENV_FILE.is_file() else ""
+        )
+    except OSError as exc:
+        LOG.warning("No se pudo leer %s: %s", ENV_FILE, exc)
+        existing = ""
+
+    out: List[str] = []
+    replaced = False
+    for line in existing.splitlines():
+        probe = line.strip()
+        prefix = ""
+        if probe.startswith("export "):
+            prefix = "export "
+            probe = probe[len("export ") :].lstrip()
+        if probe.startswith("CAMERA_SOURCE="):
+            out.append(f"{prefix}CAMERA_SOURCE={source}")
+            replaced = True
+        else:
+            out.append(line)
+    if not replaced:
+        if out and out[-1].strip():
+            out.append("")
+        out.append(f"CAMERA_SOURCE={source}")
+
+    try:
+        ENV_FILE.write_text("\n".join(out).rstrip() + "\n", encoding="utf-8")
+    except OSError as exc:
+        LOG.warning("No se pudo guardar CAMERA_SOURCE en %s: %s", ENV_FILE, exc)
+        return False
+    os.environ["CAMERA_SOURCE"] = source
+    return True
+
+
 @dataclass
 class Settings:
     """Configuración efectiva de la aplicación."""
@@ -238,6 +282,8 @@ class Settings:
             "age_buckets": list(self.age_buckets),
             "camera_control": True,
             "camera_type": "url" if self.camera_source else "usb",
+            "camera_source": self.camera_source,
+            "camera_index": self.camera_index,
             "snapshot_endpoint": "/api/snapshot",
             "jpeg_quality": self.jpeg_quality,
         }

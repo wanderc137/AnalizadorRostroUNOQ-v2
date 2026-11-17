@@ -30,6 +30,10 @@
     apiToken: document.getElementById("api-token"),
     cameraLive: document.getElementById("camera-live"),
     cameraState: document.getElementById("camera-state"),
+    cameraSource: document.getElementById("camera-source"),
+    btnProbeSource: document.getElementById("btn-probe-source"),
+    btnApplySource: document.getElementById("btn-apply-source"),
+    sourceInfo: document.getElementById("source-info"),
     showcase: document.getElementById("showcase"),
     adImage: document.getElementById("ad-image"),
     adContent: document.querySelector(".ad-content"),
@@ -494,7 +498,9 @@
     lastCameraOk = cameraOk;
 
     if (!cameraOk) {
-      showOverlay("Cámara no disponible. Revisá IP Webcam o la conexión USB.");
+      showOverlay(
+        "Cámara no disponible. Escribí la IP de IP Webcam o revisá la conexión USB."
+      );
     } else {
       showOverlay("");
     }
@@ -539,6 +545,23 @@
       if (els.apiToken && config.auth_enabled) {
         els.apiToken.value = apiToken;
       }
+      if (els.cameraSource && config.camera_source) {
+        els.cameraSource.value = config.camera_source;
+      }
+      if (config.camera_source) {
+        setSourceInfo(
+          "Fuente actual cargada desde .env. Podés cambiarla y pulsar Aplicar.",
+          "muted"
+        );
+      } else {
+        const index = Number.isInteger(config.camera_index)
+          ? config.camera_index
+          : 0;
+        setSourceInfo(
+          `Sin IP configurada: se usa la cámara USB /dev/video${index}.`,
+          "muted"
+        );
+      }
     } catch (error) {
       toast(`No se pudo leer /api/config: ${error.message}`, "error");
     }
@@ -550,11 +573,101 @@
     }
   }
 
+  // ------------------------------------------------------- fuente de cámara
+
+  function setSourceInfo(text, kind = "muted") {
+    if (!els.sourceInfo) return;
+    els.sourceInfo.textContent = text;
+    els.sourceInfo.dataset.kind = kind;
+  }
+
+  async function probeCameraSource() {
+    const value = els.cameraSource ? els.cameraSource.value.trim() : "";
+    if (!value) {
+      setSourceInfo("Escribí la IP del teléfono (ej: 192.168.10.75:8080).", "warn");
+      if (els.cameraSource) els.cameraSource.focus();
+      return;
+    }
+    els.btnProbeSource.disabled = true;
+    setSourceInfo("Probando conexión con /photo.jpg…", "muted");
+    try {
+      const data = await requestJSON(
+        `/api/camera/probe?url=${encodeURIComponent(value)}`
+      );
+      if (els.cameraSource) els.cameraSource.value = data.source;
+      const resolution = Array.isArray(data.resolution) ? data.resolution : [];
+      const size = resolution.length === 2
+        ? ` · ${resolution[1]}×${resolution[0]}`
+        : "";
+      setSourceInfo(`IP Webcam responde${size}. Pulsá Aplicar para usarla.`, "ok");
+      toast("IP Webcam responde correctamente");
+    } catch (error) {
+      handleAuthError(error);
+      setSourceInfo(`No se pudo conectar: ${error.message}`, "warn");
+      toast(friendlyError(error, "No se pudo probar la IP Webcam"), "error");
+    } finally {
+      els.btnProbeSource.disabled = false;
+    }
+  }
+
+  async function applyCameraSource() {
+    const value = els.cameraSource ? els.cameraSource.value.trim() : "";
+    if (!value) {
+      setSourceInfo("Escribí la IP del teléfono (ej: 192.168.10.75:8080).", "warn");
+      if (els.cameraSource) els.cameraSource.focus();
+      return;
+    }
+    els.btnApplySource.disabled = true;
+    setSourceInfo("Aplicando y esperando el primer frame…", "muted");
+    try {
+      const data = await requestJSON("/api/camera/source", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: value }),
+      });
+      if (els.cameraSource) els.cameraSource.value = data.source;
+      config = config || {};
+      config.camera_source = data.source;
+      const saved = data.persisted
+        ? "Guardada en .env y conectada."
+        : "Conectada, pero no se pudo guardar en .env.";
+      setSourceInfo(`${saved} Fuente: ${data.source}.`, data.persisted ? "ok" : "warn");
+      toast(
+        data.persisted
+          ? "IP Webcam guardada y conectada"
+          : "IP Webcam conectada (solo esta sesión)"
+      );
+      attachStream();
+      await refreshStatus();
+    } catch (error) {
+      handleAuthError(error);
+      setSourceInfo(`No se pudo aplicar: ${error.message}`, "warn");
+      toast(friendlyError(error, "No se pudo cambiar la fuente de cámara"), "error");
+    } finally {
+      els.btnApplySource.disabled = false;
+    }
+  }
+
   function bindControls() {
     if (els.apiToken) {
       els.apiToken.value = apiToken;
       els.apiToken.addEventListener("input", () => persistToken(els.apiToken.value));
       els.apiToken.addEventListener("change", () => persistToken(els.apiToken.value));
+    }
+
+    if (els.btnProbeSource) {
+      els.btnProbeSource.addEventListener("click", probeCameraSource);
+    }
+    if (els.btnApplySource) {
+      els.btnApplySource.addEventListener("click", applyCameraSource);
+    }
+    if (els.cameraSource) {
+      els.cameraSource.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          applyCameraSource();
+        }
+      });
     }
 
     els.btnStart.addEventListener("click", async () => {

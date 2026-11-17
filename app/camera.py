@@ -91,6 +91,25 @@ class Camera:
     def running(self) -> bool:
         return self._running
 
+    def set_source(self, source: int | str) -> None:
+        """Cambia la fuente de captura (la cámara debe estar detenida).
+
+        Se usa desde ``POST /api/camera/source``: el endpoint detiene el
+        pipeline y la cámara, llama a este método y vuelve a arrancar. El
+        próximo ``_open()`` usará la fuente nueva sin reiniciar el proceso.
+        """
+        if self._running:
+            raise RuntimeError(
+                "Detené la cámara antes de cambiar la fuente de captura"
+            )
+        with self._cap_lock:
+            self._release_locked()
+            self.source = source
+            self._is_url = isinstance(source, str) and "://" in source
+            self.index = 0 if self._is_url else int(source)
+            self._failures = 0
+            self._last_error = "Cámara no inicializada"
+
     @property
     def is_ok(self) -> bool:
         """True si hay frames frescos del dispositivo."""

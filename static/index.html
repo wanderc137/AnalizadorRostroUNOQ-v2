@@ -121,6 +121,18 @@
           </div>
         </div>
 
+        <div class="source-row">
+          <label for="camera-source">IP Webcam</label>
+          <input id="camera-source" type="text" placeholder="192.168.10.75:8080"
+                 autocomplete="off" spellcheck="false" inputmode="url"
+                 autocapitalize="off" aria-describedby="source-info">
+          <button id="btn-probe-source" class="btn btn--ghost" type="button">Probar</button>
+          <button id="btn-apply-source" class="btn btn--primary" type="button">Aplicar</button>
+        </div>
+        <p id="source-info" class="source-info" role="status" aria-live="polite">
+          IP o URL del teléfono. Aplicar reconecta la cámara y guarda el valor.
+        </p>
+
         <div class="controls">
           <button id="btn-start" class="btn btn--primary" type="button">Iniciar cámara</button>
           <button id="btn-stop" class="btn btn--ghost" type="button">Detener</button>

@@ -274,6 +274,8 @@ CAMERA_SOURCE=http://192.168.10.249:8080/video
 
 4. Reiniciá el servicio. El primer frame puede tardar 2–4 s.
 
+También podés hacerlo desde la interfaz, sin tocar archivos: en la tarjeta **Vista en vivo**, escribí la IP en el campo **IP Webcam** (por ejemplo `192.168.10.249:8080`), pulsá **Probar** para verificar que responde y luego **Aplicar**. La app normaliza la URL, reconecta la cámara y guarda el valor en `CAMERA_SOURCE` dentro de `.env`; el cambio sobrevive al reinicio del servicio.
+
 > Mantené IP Webcam en primer plano y la pantalla encendida. Si el teléfono cambia de red o entra en reposo, el stream se corta y la app muestra la cámara offline; se reconecta sola cada 2 s cuando la fuente vuelve.
 
 ### 5.4 Cámara USB (Brio)
