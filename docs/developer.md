@@ -515,8 +515,10 @@ El timestamp del último snapshot se lee y se actualiza bajo lock, de forma ató
 ### Anuncios
 
 - `ADS` es un objeto con claves por segmento (`male_young`, `male_mid`, `male_senior`, `female_*`, `default`).
+- Bandas: punto medio `< 19` (young), `19–50` (mid) y `> 50` (senior).
+- Las seis creatividades por segmento usan `overlay: false`: la gráfica ya trae su copy y se muestra completa (`object-fit: contain`, clase `showcase--creative`) sin duplicar texto.
 - Umbrales: `MIN_GENDER_CONF = 0.55`, `MIN_AGE_CONF = 0.25`.
-- Sin rostro o baja confianza → `ADS.default` (`travel-default.svg`) y texto `"Sin rostro detectado · modo viajes."`.
+- Sin rostro o baja confianza → `ADS.default` (`travel-default.svg`) con overlay de texto y `"Sin rostro detectado · modo viajes."`.
 - No hay historial ni almacenamiento: se decide en cada refresco con el frame actual.
 - Los assets son locales; no hay peticiones a terceros en runtime.
 

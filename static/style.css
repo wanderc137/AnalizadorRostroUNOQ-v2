@@ -216,6 +216,71 @@ body {
   transform: scale(1.07);
 }
 
+/*
+ * Creatividades cerradas (JPG con su propio copy): se muestra la pieza
+ * completa, sin recortes ni overlay de texto, para que el mensaje del
+ * anuncio no se duplique ni se corte en pantallas de distinta proporción.
+ */
+.showcase--creative {
+  background: #05070a;
+}
+
+/* Fondo ambiental: la misma pieza desenfocada llena las bandas del letterbox. */
+.showcase--creative::before {
+  content: "";
+  position: absolute;
+  inset: -56px;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, rgba(4, 7, 11, 0.22), rgba(4, 7, 11, 0.5)),
+    var(--ad-bg, none);
+  background-position: center;
+  background-size: cover;
+  filter: blur(38px) brightness(0.5) saturate(1.15);
+  transform: scale(1.08);
+}
+
+.showcase--creative .ad-image {
+  z-index: 1;
+  object-fit: contain;
+  background: transparent;
+  filter: drop-shadow(0 22px 48px rgba(0, 0, 0, 0.45));
+}
+
+.showcase--creative .ad-shade,
+.showcase--creative .ad-grid,
+.showcase--creative .ad-scan {
+  display: none;
+}
+
+.showcase--creative .ad-topline {
+  justify-content: flex-end;
+}
+
+.showcase--creative .ad-live {
+  display: none;
+}
+
+.showcase--creative .ad-footer {
+  right: auto;
+  border-top: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 7px 13px;
+  background: rgba(4, 7, 11, 0.72);
+  color: rgba(232, 237, 245, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.showcase--creative .ad-privacy {
+  display: none;
+}
+
+.ad-content[hidden] {
+  display: none;
+}
+
 .ad-shade {
   position: absolute;
   inset: 0;

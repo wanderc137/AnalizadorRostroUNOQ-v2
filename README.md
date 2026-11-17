@@ -815,20 +815,21 @@ La zona principal es un anuncio a gran formato; la cámara se muestra en miniatu
 
 | Género | Banda de edad | Creativo |
 |---|---|---|
-| Masculino | < 20 | Teléfono |
-| Masculino | 20–40 | Computador |
-| Masculino | > 40 | Corbatas |
-| Femenino | < 20 | Teléfono |
-| Femenino | 20–40 | Pañuelo de cuello |
-| Femenino | > 40 | Auto |
+| Masculino | < 19 | Gaming: Minecraft + robot educativo |
+| Masculino | 19–50 | Tecnología: smartphone + reloj inteligente |
+| Masculino | > 50 | SUV familiar con bonificación |
+| Femenino | < 19 | Gaming: Nintendo Switch + auriculares |
+| Femenino | 19–50 | Tecnología: smartphone + audífonos + smartwatch |
+| Femenino | > 50 | Crucero con descuento |
 | Sin rostro / confianza baja | — | Anuncio de viajes "El destino te está esperando" |
 
 Detalles de implementación:
 
-- La banda se calcula con el punto medio del bucket (`20-29` → 24.5; `30-39` → 34.5; `40-49` → 44.5); por eso los buckets del modelo se agrupan en `< 20`, `20–40` y `> 40`.
+- La banda se calcula con el punto medio del bucket (`10-19` → 14.5; `20-29` → 24.5; `50-59` → 54.5); por eso los buckets del modelo se agrupan en `< 19`, `19–50` y `> 50`.
 - El anuncio exige `gender_confidence >= 0.55` y `age_confidence >= 0.25`. El overlay del vídeo sigue usando `CONF_THRESHOLD` (0.6) y prefija con `~` las clases de baja confianza, para que la etiqueta y el anuncio cuenten la misma historia.
+- Las seis creatividades por segmento ya incluyen su propio texto y se muestran completas (`object-fit: contain`) sin overlay duplicado; el anuncio de viajes por defecto conserva el copy superpuesto.
 - Los textos, precios y marcas son **ficticios**: es una demostración, no una tienda real.
-- Las imágenes viven en `static/ads/` y se sirven localmente; no hay peticiones a Unsplash ni a terceros en tiempo de ejecución. Créditos y licencia en `static/ads/CREDITS.md`.
+- Las imágenes viven en `static/ads/` y se sirven localmente; no hay peticiones a terceros en tiempo de ejecución. Créditos en `static/ads/CREDITS.md`.
 - No se guarda historial de anuncios ni un perfil de la persona: el creativo se decide en memoria con el frame actual y se pierde al recargar.
 - Para cambiar creativos, editá el objeto `ADS` en `static/app.js` y reemplazá los JPG de `static/ads/`.
 
@@ -1283,7 +1284,8 @@ AnalizadorRostroUNOQ-v2/
 │   ├── app.js
 │   ├── style.css
 │   └── ads/
-│       ├── tie.jpg ... travel-default.svg
+│       ├── male-young.jpg ... female-senior.jpg
+│       ├── travel-default.svg   ← anuncio por defecto (sin rostro)
 │       ├── default.jpg          ← fondo anterior (respaldo)
 │       └── CREDITS.md
 ├── training/

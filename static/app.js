@@ -32,6 +32,7 @@
     cameraState: document.getElementById("camera-state"),
     showcase: document.getElementById("showcase"),
     adImage: document.getElementById("ad-image"),
+    adContent: document.querySelector(".ad-content"),
     adBadge: document.getElementById("ad-badge"),
     adKicker: document.getElementById("ad-kicker"),
     adTitle: document.getElementById("ad-title"),
@@ -49,7 +50,11 @@
 
   /**
    * Creatividades locales. El segmento se calcula con la predicción del
-   * rostro más grande: género + tres bandas de edad (<20, 20–40, >40).
+   * rostro más grande: género + tres bandas de edad (<19, 19–50, >50).
+   *
+   * Las seis gráficas nuevas ya incluyen su propio copy, así que se muestran
+   * a pantalla completa (`overlay: false`). El anuncio de viajes por defecto
+   * conserva el overlay de texto histórico (`overlay: true`).
    */
   const ADS = {
     default: {
@@ -69,94 +74,100 @@
       reason: "Sin rostro detectado · modo viajes.",
     },
     male_young: {
-      image: "/static/ads/phone-m.jpg",
+      image: "/static/ads/male-young.jpg",
       position: "center",
       accent: "#38bdf8",
+      badge: "GAMING",
+      kicker: "JUEGA Y CONSTRUYE",
+      title: "Tu próximo mundo empieza acá.",
+      subtitle:
+        "Minecraft para Nintendo Switch y robots educativos: diversión, " +
+        "creatividad y tecnología para armar sin límites.",
+      price: "Desde US$ 49",
+      priceNote: "Juego + robot",
+      cta: "Ver juegos",
+      reason: "Recomendado para un perfil joven.",
+      overlay: false,
+    },
+    male_mid: {
+      image: "/static/ads/male-mid.jpg",
+      position: "center",
+      accent: "#60a5fa",
       badge: "TECNOLOGÍA",
-      kicker: "NACISTE CON WIFI",
+      kicker: "TECNOLOGÍA QUE TE ACOMPAÑA",
       title: "El próximo nivel, en tu bolsillo.",
       subtitle:
-        "Smartphone Pro 5G: cámara que ve de noche, batería para todo el día " +
-        "y potencia para tu próximo video.",
+        "Smartphone de última generación y reloj inteligente: salud, " +
+        "productividad y potencia para todo el día.",
       price: "US$ 899",
       priceNote: "12 cuotas sin interés",
       cta: "Ver oferta",
-      reason: "Recomendado para un perfil joven.",
-    },
-    male_mid: {
-      image: "/static/ads/laptop.jpg",
-      position: "center",
-      accent: "#7dd3fc",
-      badge: "SETUP",
-      kicker: "MODO PRODUCTIVO",
-      title: "Armá el setup que te sigue.",
-      subtitle:
-        "Notebook Ultra 14”: pantalla 2.8K, 16 GB de RAM y una batería " +
-        "que no te deja a mitad de proyecto.",
-      price: "US$ 1.299",
-      priceNote: "Envío gratis",
-      cta: "Ver oferta",
       reason: "Recomendado para un perfil profesional.",
+      overlay: false,
     },
     male_senior: {
-      image: "/static/ads/tie.jpg",
+      image: "/static/ads/male-senior.jpg",
       position: "center",
-      accent: "#d4af37",
-      badge: "ESTILO",
-      kicker: "EL DETALLE QUE SE NOTA",
-      title: "Elegancia que no necesita explicación.",
+      accent: "#c2415f",
+      badge: "AUTOS",
+      kicker: "TU PRÓXIMO AUTO FAMILIAR",
+      title: "Espacio y seguridad para toda la familia.",
       subtitle:
-        "Corbata de seda italiana, tejido jacquard y un nudo que queda " +
-        "perfecto desde la primera vez.",
-      price: "US$ 89",
-      priceNote: "Colección otoño",
-      cta: "Ver oferta",
-      reason: "Recomendado para un perfil experimentado.",
+        "SUV para hasta 7 pasajeros: máxima seguridad, gran capacidad y " +
+        "confort en cada viaje. Bonificación de $1.000.000 por tiempo limitado.",
+      price: "Bonificación de $1.000.000",
+      priceNote: "por tiempo limitado",
+      cta: "Agendar test drive",
+      reason: "Recomendado para un perfil consolidado.",
+      overlay: false,
     },
     female_young: {
-      image: "/static/ads/phone-f.jpg",
+      image: "/static/ads/female-young.jpg",
+      position: "center",
+      accent: "#d946ef",
+      badge: "GAMING",
+      kicker: "DIVERSIÓN SIN LÍMITES",
+      title: "Jugá, escuchá y creá sin parar.",
+      subtitle:
+        "Nintendo Switch con Kirby y auriculares gamer: diversión y " +
+        "estilo para todos tus momentos.",
+      price: "US$ 299",
+      priceNote: "Combo gamer",
+      cta: "Comprar ahora",
+      reason: "Recomendado para un perfil joven.",
+      overlay: false,
+    },
+    female_mid: {
+      image: "/static/ads/female-mid.jpg",
       position: "center",
       accent: "#f472b6",
       badge: "TECNOLOGÍA",
-      kicker: "TU MUNDO, EN UNA PANTALLA",
+      kicker: "TECNOLOGÍA QUE TE ACOMPAÑA",
       title: "Todo lo que imaginás, en tu mano.",
       subtitle:
-        "Smartphone Studio: cámara pro, filtros en tiempo real y batería " +
-        "para compartir hasta el último momento.",
-      price: "US$ 799",
-      priceNote: "Incluye funda",
-      cta: "Ver oferta",
-      reason: "Recomendado para un perfil joven.",
-    },
-    female_mid: {
-      image: "/static/ads/scarf.jpg",
-      position: "center 35%",
-      accent: "#f59e0b",
-      badge: "MODA",
-      kicker: "SUAVIDAD QUE ABRAZA",
-      title: "Un pañuelo cambia todo el look.",
-      subtitle:
-        "Seda liviana, caída perfecta y colores que iluminan. " +
-        "El accesorio que transforma lo simple en tuyo.",
-      price: "US$ 129",
-      priceNote: "3 colores disponibles",
-      cta: "Ver oferta",
+        "Smartphone, audífonos y smartwatch en rosa: la colección que " +
+        "combina estilo, música y bienestar.",
+      price: "US$ 749",
+      priceNote: "Colección completa",
+      cta: "Descubrir colección",
       reason: "Recomendado para un perfil adulto.",
+      overlay: false,
     },
     female_senior: {
-      image: "/static/ads/car.jpg",
+      image: "/static/ads/female-senior.jpg",
       position: "center",
-      accent: "#ef4444",
-      badge: "AUTOS",
-      kicker: "EL VIAJE EMPIEZA ACÁ",
-      title: "Diseño que se siente al manejar.",
+      accent: "#d4a24c",
+      badge: "VIAJES",
+      kicker: "TU PRÓXIMO CRUCERO",
+      title: "Descubrí nuevos destinos, viví grandes experiencias.",
       subtitle:
-        "Sedán GT 2026: potencia, confort y tecnología para que cada " +
-        "recorrido sea el mejor del día.",
-      price: "Desde US$ 54.900",
-      priceNote: "Test drive sin cargo",
-      cta: "Agendar test drive",
+        "Crucero con todo incluido, gastronomía premium y excursiones: " +
+        "el viaje que te merecés, con hasta 20% de descuento.",
+      price: "Hasta 20% off",
+      priceNote: "Reserva anticipada",
+      cta: "Ver cruceros",
       reason: "Recomendado para un perfil consolidado.",
+      overlay: false,
     },
   };
 
@@ -301,8 +312,8 @@
     if (midpoint === null) return null;
 
     let band;
-    if (midpoint < 20) band = "young";
-    else if (midpoint < 40) band = "mid";
+    if (midpoint < 19) band = "young";
+    else if (midpoint <= 50) band = "mid";
     else band = "senior";
     return `${gender}_${band}`;
   }
@@ -335,11 +346,18 @@
   }
 
   function paintAd(ad, face, stateText) {
+    const creativeOnly = ad.overlay === false;
     currentAd = ad;
     if (els.showcase) {
       els.showcase.style.setProperty("--ad-accent", ad.accent);
       els.showcase.style.setProperty("--ad-accent-2", ad.accent);
+      els.showcase.style.setProperty(
+        "--ad-bg",
+        creativeOnly ? `url("${ad.image}")` : "none"
+      );
+      els.showcase.classList.toggle("showcase--creative", creativeOnly);
     }
+    if (els.adContent) els.adContent.hidden = creativeOnly;
     if (els.adImage) {
       els.adImage.src = ad.image;
       els.adImage.alt = `Publicidad: ${ad.title}`;

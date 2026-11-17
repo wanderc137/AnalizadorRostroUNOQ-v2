@@ -364,15 +364,15 @@ La demo elige un creativo local según género y banda de edad:
 
 | Género estimado | Banda | Creativo |
 |---|---|---|
-| Masculino | < 20 | Teléfono |
-| Masculino | 20–40 | Computador |
-| Masculino | > 40 | Corbatas |
-| Femenino | < 20 | Teléfono |
-| Femenino | 20–40 | Pañuelo |
-| Femenino | > 40 | Auto |
+| Masculino | < 19 | Gaming (Minecraft + robot) |
+| Masculino | 19–50 | Tecnología (smartphone + reloj) |
+| Masculino | > 50 | SUV familiar |
+| Femenino | < 19 | Gaming (Switch + auriculares) |
+| Femenino | 19–50 | Tecnología (smartphone + audífonos + smartwatch) |
+| Femenino | > 50 | Crucero |
 | Sin rostro / baja confianza | — | Viajes |
 
-Bandas por punto medio del bucket (`20-29` → 24.5). Umbrales: `gender_confidence >= 0.55` y `age_confidence >= 0.25`. Los textos, precios y marcas son **ficticios**. No hay historial ni perfil: el creativo se decide en memoria con el frame actual.
+Bandas por punto medio del bucket (`10-19` → 14.5; `20-29` → 24.5; `50-59` → 54.5). Umbrales: `gender_confidence >= 0.55` y `age_confidence >= 0.25`. Las creatividades por segmento ya incluyen su texto y se muestran completas, sin overlay duplicado. Los textos, precios y marcas son **ficticios**. No hay historial ni perfil: el creativo se decide en memoria con el frame actual.
 
 ---
 
